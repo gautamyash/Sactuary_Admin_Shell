@@ -57,7 +57,7 @@ export function RevenueAnalyticsCard() {
                 />
                 <Tooltip
                   cursor={{ fill: "var(--muted)" }}
-                  formatter={(v: number) => money(v)}
+                  formatter={(v) => money(Number(v))}
                   contentStyle={{
                     borderRadius: 8,
                     border: "1px solid var(--border)",
