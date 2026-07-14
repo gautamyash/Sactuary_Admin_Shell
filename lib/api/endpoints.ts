@@ -59,4 +59,9 @@ export const endpoints = {
     patientVisits: (id: number) => `/api/records/patients/${id}/visits/`,
     patientTimeline: (id: number) => `/api/records/patients/${id}/timeline/`,
   },
+  config: {
+    hospitalAdmin: "/api/config/admin/hospital/",
+    featuresAdminList: "/api/config/admin/features/",
+    featureAdminDetail: (key: string) => `/api/config/admin/features/${key}/`,
+  },
 } as const;

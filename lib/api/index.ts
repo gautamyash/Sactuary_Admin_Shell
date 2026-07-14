@@ -8,4 +8,14 @@ export { authApi } from "@/lib/api/auth";
 export { usersApi } from "@/lib/api/users";
 export { rolesApi } from "@/lib/api/roles";
 export { permissionsApi } from "@/lib/api/permissions";
+export { hospitalProfileApi, configurationValuesApi } from "@/lib/api/hospitalConfig";
+export type {
+  HospitalProfile,
+  HospitalProfileInput,
+  ConfigurationValue,
+  ConfigurationValueData,
+  ConfigurationValueType,
+  ConfigurationValueInput,
+  ConfigurationValueUpdateInput,
+} from "@/lib/api/hospitalConfig";
 export * from "@/lib/api/mappers";
