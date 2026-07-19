@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { useUpdateUser } from "@/components/access/queries";
@@ -80,8 +80,11 @@ export function EditPatientDialog({
   const [form, setForm] = useState(emptyState());
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && profile.data && record.data) {
+  const resetDeps = [open, profile.data, record.data];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    if (profile.data && record.data) {
       const { user } = profile.data;
       const rec = record.data;
       setForm({
@@ -103,7 +106,7 @@ export function EditPatientDialog({
       });
       setError(null);
     }
-  }, [open, profile.data, record.data]);
+  }
 
   if (!open || patientId === null) return null;
 

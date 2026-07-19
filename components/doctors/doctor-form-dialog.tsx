@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { useCreateDoctor, useSpecialtyOptions, useUpdateDoctor } from "@/components/doctors/queries";
@@ -89,8 +89,10 @@ export function DoctorFormDialog({
   const isEdit = doctor != null;
   const pending = createDoctor.isPending || updateDoctor.isPending;
 
-  useEffect(() => {
-    if (!open) return;
+  const resetDeps = [open, doctor, specialties.data];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
     setError(null);
     if (doctor) {
       const match = specialties.data?.find((s) => s.name === doctor.specialty);
@@ -98,8 +100,7 @@ export function DoctorFormDialog({
     } else {
       setForm(emptyForm());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, doctor, specialties.data]);
+  }
 
   if (!open) return null;
 

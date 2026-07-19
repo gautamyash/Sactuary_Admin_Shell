@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { useCompleteAppointment, usePatientAppointments } from "@/components/patients/queries";
@@ -55,13 +55,14 @@ export function AddVisitDialog({
     [appointments.data],
   );
 
-  useEffect(() => {
-    if (open) {
-      setSelectedId(null);
-      setActualMinutes("");
-      setFormError(null);
-    }
-  }, [open, patientId]);
+  const resetDeps = [open, patientId];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    setSelectedId(null);
+    setActualMinutes("");
+    setFormError(null);
+  }
 
   if (!open) return null;
 

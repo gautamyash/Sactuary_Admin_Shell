@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { usePatientVisits, useUpdateVisitNotes } from "@/components/patients/queries";
@@ -60,8 +60,11 @@ export function ClinicalNotesDialog({
   const [form, setForm] = useState(emptyState());
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && visits.data) {
+  const resetDeps = [open, visitId, visits.data];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    if (visits.data) {
       const v = visits.data.find((vv) => vv.id === visitId) ?? null;
       setForm({
         chiefComplaint: v?.chiefComplaint ?? "",
@@ -71,7 +74,7 @@ export function ClinicalNotesDialog({
       });
       setError(null);
     }
-  }, [open, visitId, visits.data]);
+  }
 
   if (!open || visitId === null) return null;
 

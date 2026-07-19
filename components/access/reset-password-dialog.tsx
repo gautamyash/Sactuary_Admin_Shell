@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { useResetPassword } from "@/components/access/queries";
@@ -36,13 +36,14 @@ export function ResetPasswordDialog({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      setNewPassword("");
-      setConfirmPassword("");
-      setError(null);
-    }
-  }, [open, user?.id]);
+  const resetDeps = [open, user?.id];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    setNewPassword("");
+    setConfirmPassword("");
+    setError(null);
+  }
 
   if (!open || !user) return null;
 

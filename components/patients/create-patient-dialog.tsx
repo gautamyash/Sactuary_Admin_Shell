@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { useCreateUser, useRoles } from "@/components/access/queries";
@@ -82,12 +82,13 @@ export function CreatePatientDialog({
   const [form, setForm] = useState(emptyState());
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      setForm(emptyState());
-      setError(null);
-    }
-  }, [open]);
+  const resetDeps = [open];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    setForm(emptyState());
+    setError(null);
+  }
 
   if (!open) return null;
 

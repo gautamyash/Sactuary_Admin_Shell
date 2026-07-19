@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, MoreVertical, Stethoscope } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useAppointments } from "@/components/appointments/queries";
@@ -34,7 +34,12 @@ export function AppointmentsTable({ filters }: { filters: AppliedFilters }) {
     [data, filters.department],
   );
 
-  useEffect(() => setPage(1), [filters, data]);
+  const pageResetDeps = [filters, data];
+  const [prevPageResetDeps, setPrevPageResetDeps] = useState(pageResetDeps);
+  if (pageResetDeps.some((v, i) => !Object.is(v, prevPageResetDeps[i]))) {
+    setPrevPageResetDeps(pageResetDeps);
+    setPage(1);
+  }
 
   const total = rows.length;
   const start = (page - 1) * PAGE_SIZE;

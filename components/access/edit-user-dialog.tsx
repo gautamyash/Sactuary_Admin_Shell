@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { useRoles, useUpdateUser, useUser } from "@/components/access/queries";
@@ -51,8 +51,11 @@ export function EditUserDialog({
   const [form, setForm] = useState(emptyState());
   const [error2, setError2] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && data) {
+  const resetDeps = [open, data];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    if (data) {
       setForm({
         name: data.user.name,
         phone: data.user.phone ?? "",
@@ -62,7 +65,7 @@ export function EditUserDialog({
       });
       setError2(null);
     }
-  }, [open, data]);
+  }
 
   if (!open || userId === null) return null;
 

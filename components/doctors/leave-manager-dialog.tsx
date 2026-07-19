@@ -1,7 +1,7 @@
 "use client";
 
 import { Pencil, Plus, Trash2, X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import {
@@ -58,13 +58,14 @@ export function LeaveManagerDialog({
   const [draft, setDraft] = useState<DraftState>(emptyDraft());
   const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      setEditingId(null);
-      setDraft(emptyDraft());
-      setFormError(null);
-    }
-  }, [open, doctor?.id]);
+  const resetDeps = [open, doctor?.id];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    setEditingId(null);
+    setDraft(emptyDraft());
+    setFormError(null);
+  }
 
   if (!open || !doctor) return null;
 

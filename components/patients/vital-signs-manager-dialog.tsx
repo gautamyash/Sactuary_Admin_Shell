@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { usePatientVisits, useUpdateVitals } from "@/components/patients/queries";
@@ -91,13 +91,16 @@ export function VitalSignsManagerDialog({
 
   const visit = visits.data?.find((v) => v.id === visitId) ?? null;
 
-  useEffect(() => {
-    if (open && visits.data) {
+  const resetDeps = [open, visitId, visits.data];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    if (visits.data) {
       const v = visits.data.find((vv) => vv.id === visitId) ?? null;
       setDraft(draftFrom(v?.vitals));
       setFormError(null);
     }
-  }, [open, visitId, visits.data]);
+  }
 
   if (!open || visitId === null) return null;
 

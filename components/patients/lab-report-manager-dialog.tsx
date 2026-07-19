@@ -1,7 +1,7 @@
 "use client";
 
 import { Download, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import {
@@ -76,14 +76,15 @@ export function LabReportManagerDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (open) {
-      setEditingId(null);
-      setTitle("");
-      setFile(null);
-      setFormError(null);
-    }
-  }, [open, visitId]);
+  const resetDeps = [open, visitId];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    setEditingId(null);
+    setTitle("");
+    setFile(null);
+    setFormError(null);
+  }
 
   if (!open || visitId === null) return null;
 
@@ -240,7 +241,7 @@ export function LabReportManagerDialog({
 
               {editingId ? (
                 <p className="text-xs text-muted-foreground">
-                  The file itself can't be replaced here — only the test name.
+                  The file itself can&apos;t be replaced here — only the test name.
                 </p>
               ) : (
                 <FormField label="File" hint="PDF, JPG, or PNG, up to 10 MB.">

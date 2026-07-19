@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { FormField, inputClass } from "@/components/settings/form-field";
@@ -16,11 +16,14 @@ export function GeneralSection() {
   const [shortName, setShortName] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!profile.data) return;
-    setName(profile.data.name);
-    setShortName(profile.data.shortName);
-  }, [profile.data]);
+  const [prevProfileData, setPrevProfileData] = useState(profile.data);
+  if (!Object.is(profile.data, prevProfileData)) {
+    setPrevProfileData(profile.data);
+    if (profile.data) {
+      setName(profile.data.name);
+      setShortName(profile.data.shortName);
+    }
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();

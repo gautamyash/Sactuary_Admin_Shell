@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { inputClass, textareaClass } from "@/components/settings/form-field";
@@ -30,11 +30,13 @@ export function ConfigurationValueRow({ item }: { item: ConfigurationValue }) {
   // JSON: textarea holding the raw editable text, parsed on save.
   const [jsonError, setJsonError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const [prevItemValue, setPrevItemValue] = useState(item.value);
+  if (!Object.is(item.value, prevItemValue)) {
+    setPrevItemValue(item.value);
     setBoolValue(Boolean(item.value));
     setTextValue(stringifyForEditing(item.value));
     setJsonError(null);
-  }, [item.value]);
+  }
 
   const dirty =
     item.valueType === "json"

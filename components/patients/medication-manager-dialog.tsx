@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, Pencil, Trash2, X } from "lucide-react";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import {
@@ -56,13 +56,14 @@ export function MedicationManagerDialog({
   const [draft, setDraft] = useState<DraftState>(emptyDraft());
   const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      setEditingId(null);
-      setDraft(emptyDraft());
-      setFormError(null);
-    }
-  }, [open, patientId]);
+  const resetDeps = [open, patientId];
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  if (resetDeps[0] && resetDeps.some((v, i) => !Object.is(v, prevResetDeps[i]))) {
+    setPrevResetDeps(resetDeps);
+    setEditingId(null);
+    setDraft(emptyDraft());
+    setFormError(null);
+  }
 
   if (!open || patientId === null) return null;
 

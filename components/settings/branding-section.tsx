@@ -33,11 +33,14 @@ export function BrandingSection() {
 
   const saving = update.isPending || updateWithLogo.isPending;
 
-  useEffect(() => {
-    if (!profile.data) return;
-    setPrimaryColor(profile.data.primaryColor);
-    setSecondaryColor(profile.data.secondaryColor);
-  }, [profile.data]);
+  const [prevProfileData, setPrevProfileData] = useState(profile.data);
+  if (!Object.is(profile.data, prevProfileData)) {
+    setPrevProfileData(profile.data);
+    if (profile.data) {
+      setPrimaryColor(profile.data.primaryColor);
+      setSecondaryColor(profile.data.secondaryColor);
+    }
+  }
 
   // Revoke the object URL used for a locally-selected file preview once it's
   // replaced or the component unmounts, so we don't leak blob URLs.

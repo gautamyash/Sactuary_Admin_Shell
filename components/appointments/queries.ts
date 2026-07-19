@@ -1,8 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { appointmentsApi, type AdminAppointmentParams } from "@/lib/api/appointments";
+import {
+  appointmentsApi,
+  type AdminAppointmentParams,
+  type CreateAppointmentInput,
+} from "@/lib/api/appointments";
 import { doctorsApi } from "@/lib/api/doctors";
 import { specialtiesApi } from "@/lib/api/specialties";
 
@@ -41,4 +45,24 @@ export function useDoctorOptions() {
 
 export function useSpecialtyOptions() {
   return useQuery({ queryKey: apptKeys.specialties(), queryFn: () => specialtiesApi.list() });
+}
+
+/** POST /api/admin/appointments/ for an arbitrary patient (Phase: Export
+ * Report & New Appointment actions) — the same admin booking endpoint
+ * (appointmentsApi.create) FollowUpCarePlanDialog's useCreateFollowUpAppointment
+ * already calls, just not pinned to one patient ahead of time. Used by the
+ * general-purpose "New Appointment" action (Dashboard, and reusable anywhere
+ * else that placeholder appears) rather than a parallel booking call.
+ * Invalidates the same "appointments" prefix useCreateFollowUpAppointment
+ * does, plus "dashboard" since the Dashboard's own today's-appointments query
+ * lives under a separate key prefix. */
+export function useCreateAppointment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateAppointmentInput) => appointmentsApi.create(input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["appointments"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
 }

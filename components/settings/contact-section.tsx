@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { FormField, inputClass, textareaClass } from "@/components/settings/form-field";
@@ -20,15 +20,18 @@ export function ContactSection() {
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!profile.data) return;
-    setEmail(profile.data.email);
-    setPhone(profile.data.phone);
-    setAddress(profile.data.address);
-    setWebsite(profile.data.website);
-    setGstNumber(profile.data.gstNumber);
-    setRegistrationNumber(profile.data.registrationNumber);
-  }, [profile.data]);
+  const [prevProfileData, setPrevProfileData] = useState(profile.data);
+  if (!Object.is(profile.data, prevProfileData)) {
+    setPrevProfileData(profile.data);
+    if (profile.data) {
+      setEmail(profile.data.email);
+      setPhone(profile.data.phone);
+      setAddress(profile.data.address);
+      setWebsite(profile.data.website);
+      setGstNumber(profile.data.gstNumber);
+      setRegistrationNumber(profile.data.registrationNumber);
+    }
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();

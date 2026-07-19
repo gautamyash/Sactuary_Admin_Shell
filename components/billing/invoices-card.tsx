@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Download, Eye } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useDepartmentOptions, useInvoices } from "@/components/billing/queries";
@@ -80,7 +80,12 @@ export function InvoicesCard({
     [data, filters.department],
   );
 
-  useEffect(() => setPage(1), [filters, data]);
+  const pageResetDeps = [filters, data];
+  const [prevPageResetDeps, setPrevPageResetDeps] = useState(pageResetDeps);
+  if (pageResetDeps.some((v, i) => !Object.is(v, prevPageResetDeps[i]))) {
+    setPrevPageResetDeps(pageResetDeps);
+    setPage(1);
+  }
 
   const total = rows.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
