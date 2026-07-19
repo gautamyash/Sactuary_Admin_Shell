@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
+import { AllergiesCard } from "@/components/patients/allergies-card";
 import { CurrentVitalsCard } from "@/components/patients/current-vitals-card";
+import { MedicalVisitsCard } from "@/components/patients/medical-visits-card";
+import { MedicationsCard } from "@/components/patients/medications-card";
 import { PatientJourney } from "@/components/patients/patient-journey";
 import { PatientProfileCard } from "@/components/patients/patient-profile-card";
 import { QuickActionsCard } from "@/components/patients/quick-actions-card";
@@ -40,9 +43,14 @@ export default async function PatientJourneyPage({
           <div className="space-y-6">
             <PatientProfileCard id={patientId} />
             <CurrentVitalsCard id={patientId} />
+            <AllergiesCard id={patientId} />
+            <MedicationsCard id={patientId} />
             <QuickActionsCard />
           </div>
-          <PatientJourney id={patientId} />
+          <div className="space-y-6">
+            <MedicalVisitsCard id={patientId} />
+            <PatientJourney id={patientId} />
+          </div>
         </div>
       </PermissionGate>
     </PageContainer>

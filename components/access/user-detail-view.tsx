@@ -1,10 +1,11 @@
 "use client";
 
-import { ChevronLeft, UserPlus } from "lucide-react";
+import { ChevronLeft, Pencil, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { AssignRoleDialog } from "@/components/access/assign-role-dialog";
+import { EditUserDialog } from "@/components/access/edit-user-dialog";
 import { useUser } from "@/components/access/queries";
 import { ErrorState } from "@/components/common/error-state";
 import { PermissionGate } from "@/components/common/permission-gate";
@@ -25,6 +26,7 @@ function groupByCategory(permissions: Permission[]) {
 export function UserDetailView({ id }: { id: number }) {
   const { data, isLoading, isError, error, refetch } = useUser(id);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const grouped = useMemo(
     () => groupByCategory(data?.permissions ?? []),
     [data?.permissions],
@@ -53,13 +55,25 @@ export function UserDetailView({ id }: { id: number }) {
               <Avatar name={user.name} className="size-16 text-lg" />
               <p className="mt-3 text-lg font-semibold text-foreground">{user.name}</p>
               <p className="text-sm text-muted-foreground">{user.email}</p>
-              <div className="mt-3">
+              <div className="mt-3 flex items-center gap-1.5">
                 {user.isStaff ? (
                   <Badge variant="success">Staff</Badge>
                 ) : (
                   <Badge variant="secondary">Patient</Badge>
                 )}
+                {user.isActive === false && <Badge variant="destructive">Inactive</Badge>}
               </div>
+              <PermissionGate permission="user.edit">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Pencil className="size-3.5" />
+                  Edit user
+                </Button>
+              </PermissionGate>
             </div>
           </div>
 
@@ -130,6 +144,7 @@ export function UserDetailView({ id }: { id: number }) {
       </div>
 
       <AssignRoleDialog user={user} open={assignOpen} onOpenChange={setAssignOpen} />
+      <EditUserDialog userId={user.id ?? null} open={editOpen} onOpenChange={setEditOpen} />
     </div>
   );
 }

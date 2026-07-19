@@ -13,22 +13,30 @@ import {
 import { formatDate } from "@/components/doctors/types";
 import { ErrorState } from "@/components/common/error-state";
 import { LoadingScreen } from "@/components/common/spinner";
+import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { DoctorLeave } from "@/lib/api/doctor-leaves";
+import type { DoctorLeave, DoctorLeaveStatus } from "@/lib/api/doctor-leaves";
 import type { Doctor } from "@/lib/api/doctors";
 import { ApiError } from "@/lib/api/errors";
 
 const inputClass =
   "h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-ring";
 
+const STATUS_VARIANT: Record<DoctorLeaveStatus, BadgeVariant> = {
+  approved: "success",
+  pending: "warning",
+  rejected: "destructive",
+};
+
 interface DraftState {
   startDate: string;
   endDate: string;
   reason: string;
+  status: DoctorLeaveStatus;
 }
 
 function emptyDraft(): DraftState {
-  return { startDate: "", endDate: "", reason: "" };
+  return { startDate: "", endDate: "", reason: "", status: "pending" };
 }
 
 export function LeaveManagerDialog({
@@ -62,7 +70,12 @@ export function LeaveManagerDialog({
 
   function startEdit(row: DoctorLeave) {
     setEditingId(row.id);
-    setDraft({ startDate: row.startDate, endDate: row.endDate, reason: row.reason });
+    setDraft({
+      startDate: row.startDate,
+      endDate: row.endDate,
+      reason: row.reason,
+      status: row.status,
+    });
   }
 
   async function submit(e: FormEvent) {
@@ -72,7 +85,14 @@ export function LeaveManagerDialog({
       setFormError("Start and end date are required.");
       return;
     }
-    const input = { startDate: draft.startDate, endDate: draft.endDate, reason: draft.reason };
+    const input = {
+      startDate: draft.startDate,
+      endDate: draft.endDate,
+      reason: draft.reason,
+      // Only send status on edit — a new leave always starts pending
+      // server-side, matching the existing self-service request workflow.
+      ...(editingId ? { status: draft.status } : {}),
+    };
     try {
       if (editingId) {
         await updateLeave.mutateAsync({ leaveId: editingId, input });
@@ -136,9 +156,12 @@ export function LeaveManagerDialog({
                 data!.map((row) => (
                   <li key={row.id} className="flex items-center justify-between gap-3 p-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">
-                        {formatDate(row.startDate)} – {formatDate(row.endDate)}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground">
+                          {formatDate(row.startDate)} – {formatDate(row.endDate)}
+                        </p>
+                        <Badge variant={STATUS_VARIANT[row.status]}>{row.status}</Badge>
+                      </div>
                       {row.reason && (
                         <p className="truncate text-xs text-muted-foreground">{row.reason}</p>
                       )}
@@ -200,6 +223,22 @@ export function LeaveManagerDialog({
                   placeholder="Conference attendance"
                 />
               </div>
+              {editingId && (
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Status</label>
+                  <select
+                    value={draft.status}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, status: e.target.value as DoctorLeaveStatus }))
+                    }
+                    className={inputClass}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             {formError && <p className="text-sm text-destructive">{formError}</p>}

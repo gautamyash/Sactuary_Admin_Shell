@@ -9,12 +9,21 @@
 
 import type { LucideIcon } from "lucide-react";
 
-/** Authenticated user, normalized from `/api/auth/me/`. */
+/** Authenticated user, normalized from `/api/auth/me/`.
+ *
+ * `phone`/`gender`/`isActive` added (Phase: Complete User Management) —
+ * present on the admin user list/detail/create/edit responses (all backed
+ * by the same accounts.UserSerializer), optional here so this type still
+ * fits the narrower `/api/auth/me/` shape other call sites use. */
 export interface User {
   id?: number;
   name: string;
   email: string;
   isStaff?: boolean;
+  phone?: string;
+  gender?: string;
+  dateOfBirth?: string | null;
+  isActive?: boolean;
 }
 
 /** A single RBAC permission from `/api/auth/permissions/`. */

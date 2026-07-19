@@ -1,17 +1,22 @@
 "use client";
 
-import { Search, UserPlus } from "lucide-react";
+import { KeyRound, MoreVertical, Pencil, Plus, Power, Search, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { AssignRoleDialog } from "@/components/access/assign-role-dialog";
-import { useUsers } from "@/components/access/queries";
+import { CreateUserDialog } from "@/components/access/create-user-dialog";
+import { EditUserDialog } from "@/components/access/edit-user-dialog";
+import { useUpdateUser, useUsers } from "@/components/access/queries";
+import { ResetPasswordDialog } from "@/components/access/reset-password-dialog";
 import { ErrorState } from "@/components/common/error-state";
 import { PermissionGate } from "@/components/common/permission-gate";
 import { LoadingScreen } from "@/components/common/spinner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/lib/api/errors";
 import type { User } from "@/types";
 
 export function UsersTable() {
@@ -20,6 +25,29 @@ export function UsersTable() {
     search.trim() || undefined,
   );
   const [assignUser, setAssignUser] = useState<User | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState<number | null>(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
+  const updateUser = useUpdateUser();
+
+  async function toggleActive(user: User) {
+    if (!user.id) return;
+    setMenuOpenId(null);
+    try {
+      await updateUser.mutateAsync({
+        userId: user.id,
+        input: { isActive: !user.isActive },
+      });
+      toast.success(
+        user.isActive ? `${user.name} was deactivated.` : `${user.name} was activated.`,
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Could not update this user's status.",
+      );
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -34,6 +62,12 @@ export function UsersTable() {
             className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-4 text-sm outline-none transition-colors focus:border-ring"
           />
         </div>
+        <PermissionGate permission="user.create">
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" />
+            New User
+          </Button>
+        </PermissionGate>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -82,11 +116,14 @@ export function UsersTable() {
                   </div>
                 </td>
                 <td className="px-5 py-3">
-                  {user.isStaff ? (
-                    <Badge variant="success">Staff</Badge>
-                  ) : (
-                    <Badge variant="secondary">Patient</Badge>
-                  )}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {user.isStaff ? (
+                      <Badge variant="success">Staff</Badge>
+                    ) : (
+                      <Badge variant="secondary">Patient</Badge>
+                    )}
+                    {user.isActive === false && <Badge variant="destructive">Inactive</Badge>}
+                  </div>
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex items-center justify-end gap-2">
@@ -99,6 +136,60 @@ export function UsersTable() {
                         <UserPlus className="size-3.5" />
                         Assign role
                       </Button>
+                    </PermissionGate>
+                    <PermissionGate permission="user.edit">
+                      <div className="relative">
+                        <button
+                          type="button"
+                          aria-label="User actions"
+                          onClick={() =>
+                            setMenuOpenId((v) => (v === user.id ? null : (user.id ?? null)))
+                          }
+                          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
+                        >
+                          <MoreVertical className="size-4" />
+                        </button>
+                        {menuOpenId === user.id && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setMenuOpenId(null)}
+                            />
+                            <div className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMenuOpenId(null);
+                                  setEditUserId(user.id ?? null);
+                                }}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                              >
+                                <Pencil className="size-3.5" />
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMenuOpenId(null);
+                                  setResetPasswordUser(user);
+                                }}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+                              >
+                                <KeyRound className="size-3.5" />
+                                Reset password
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => toggleActive(user)}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10"
+                              >
+                                <Power className="size-3.5" />
+                                {user.isActive === false ? "Activate" : "Deactivate"}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </PermissionGate>
                     <Link
                       href={`/access/users/${user.id}`}
@@ -118,6 +209,17 @@ export function UsersTable() {
         user={assignUser}
         open={assignUser !== null}
         onOpenChange={(open) => !open && setAssignUser(null)}
+      />
+      <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <EditUserDialog
+        userId={editUserId}
+        open={editUserId !== null}
+        onOpenChange={(open) => !open && setEditUserId(null)}
+      />
+      <ResetPasswordDialog
+        user={resetPasswordUser}
+        open={resetPasswordUser !== null}
+        onOpenChange={(open) => !open && setResetPasswordUser(null)}
       />
     </div>
   );

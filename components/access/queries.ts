@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { permissionsApi } from "@/lib/api/permissions";
 import { rolesApi } from "@/lib/api/roles";
-import { usersApi } from "@/lib/api/users";
+import { usersApi, type CreateUserInput, type UpdateUserInput } from "@/lib/api/users";
 
 export const accessKeys = {
   users: (search?: string) => ["access", "users", search ?? ""] as const,
@@ -51,5 +51,37 @@ export function useAssignRole() {
       qc.invalidateQueries({ queryKey: ["access", "users"] });
       qc.invalidateQueries({ queryKey: accessKeys.user(vars.userId) });
     },
+  });
+}
+
+export function useCreateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateUserInput) => usersApi.create(input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["access", "users"] });
+    },
+  });
+}
+
+/** Backs both the Edit User dialog and the table's quick Activate/Deactivate
+ * action — both are the same PATCH under the hood, so both invalidate the
+ * same queries and the table/detail view refresh immediately either way. */
+export function useUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: { userId: number; input: UpdateUserInput }) =>
+      usersApi.update(vars.userId, vars.input),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ["access", "users"] });
+      qc.invalidateQueries({ queryKey: accessKeys.user(vars.userId) });
+    },
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (vars: { userId: number; newPassword: string }) =>
+      usersApi.resetPassword(vars.userId, vars.newPassword),
   });
 }

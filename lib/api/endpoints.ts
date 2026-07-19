@@ -17,6 +17,7 @@ export const endpoints = {
     list: "/api/auth/users/",
     detail: (id: number) => `/api/auth/users/${id}/`,
     role: (id: number) => `/api/auth/users/${id}/role/`,
+    resetPassword: (id: number) => `/api/auth/users/${id}/reset-password/`,
   },
   roles: {
     list: "/api/auth/roles/",
@@ -49,6 +50,7 @@ export const endpoints = {
   },
   appointments: {
     adminList: "/api/admin/appointments/",
+    complete: (id: number) => `/api/appointments/${id}/complete/`,
   },
   queue: {
     doctorQueue: (doctorId: number) => `/api/doctors/${doctorId}/queue/`,
@@ -58,6 +60,20 @@ export const endpoints = {
     patient: (id: number) => `/api/records/patients/${id}/`,
     patientVisits: (id: number) => `/api/records/patients/${id}/visits/`,
     patientTimeline: (id: number) => `/api/records/patients/${id}/timeline/`,
+    patientAllergies: (patientId: number) =>
+      `/api/records/patients/${patientId}/allergies/`,
+    allergyDetail: (allergyId: number) => `/api/records/allergies/${allergyId}/`,
+    patientMedications: (patientId: number) =>
+      `/api/records/patients/${patientId}/medications/`,
+    medicationDetail: (medicationId: number) =>
+      `/api/records/medications/${medicationId}/`,
+    visitNotes: (visitId: number) => `/api/records/visits/${visitId}/notes/`,
+    visitPrescriptions: (visitId: number) => `/api/records/visits/${visitId}/prescriptions/`,
+    prescriptionDetail: (prescriptionId: number) =>
+      `/api/records/prescriptions/${prescriptionId}/`,
+    visitReports: (visitId: number) => `/api/records/visits/${visitId}/reports/`,
+    reportDetail: (reportId: number) => `/api/records/reports/${reportId}/`,
+    visitVitals: (visitId: number) => `/api/records/visits/${visitId}/vitals/`,
   },
   config: {
     hospitalAdmin: "/api/config/admin/hospital/",

@@ -1,8 +1,13 @@
 "use client";
 
+import { Pencil } from "lucide-react";
+import { useState } from "react";
+
 import { usePatientProfile, usePatientRecord } from "@/components/patients/queries";
 import { patientReference } from "@/components/patients/patients-table";
+import { EditPatientDialog } from "@/components/patients/edit-patient-dialog";
 import { ErrorState } from "@/components/common/error-state";
+import { PermissionGate } from "@/components/common/permission-gate";
 import { LoadingScreen } from "@/components/common/spinner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export function PatientProfileCard({ id }: { id: number }) {
   const profile = usePatientProfile(id);
   const record = usePatientRecord(id);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (profile.isLoading) {
     return (
@@ -36,7 +42,18 @@ export function PatientProfileCard({ id }: { id: number }) {
 
   return (
     <Card>
-      <CardContent className="flex flex-col items-center text-center">
+      <CardContent className="relative flex flex-col items-center text-center">
+        <PermissionGate permission="user.edit">
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            aria-label="Edit patient"
+            className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
+          >
+            <Pencil className="size-4" />
+          </button>
+        </PermissionGate>
+
         <Avatar name={user.name} className="size-20 text-xl" />
         <p className="mt-3 text-lg font-semibold text-foreground">{user.name}</p>
         <p className="font-mono text-sm text-muted-foreground">ID: {patientReference(user.id)}</p>
@@ -50,8 +67,15 @@ export function PatientProfileCard({ id }: { id: number }) {
               {rec.allergies.length} allerg{rec.allergies.length === 1 ? "y" : "ies"}
             </Badge>
           )}
+          {user.isActive === false && <Badge variant="destructive">Inactive</Badge>}
         </div>
       </CardContent>
+
+      <EditPatientDialog
+        patientId={user.id ?? null}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
     </Card>
   );
 }

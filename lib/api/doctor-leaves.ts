@@ -1,12 +1,21 @@
 import { http } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/endpoints";
 
+// Phase: Advanced Doctor Schedule & Leave Management — `status` is already
+// writable on the backend's DoctorLeaveSerializer (pending/approved/rejected,
+// defaults to pending) but was never surfaced on the admin panel. Only
+// `status` is added here per that phase's explicit "Status (only if already
+// supported)" scope — `leave_type`/`notes`/`approved_by` were not asked for
+// and stay unexposed.
+export type DoctorLeaveStatus = "pending" | "approved" | "rejected";
+
 export interface DoctorLeave {
   id: number;
   doctorId: number;
   startDate: string;
   endDate: string;
   reason: string;
+  status: DoctorLeaveStatus;
   createdAt: string;
 }
 
@@ -16,6 +25,7 @@ interface RawDoctorLeave {
   start_date: string;
   end_date: string;
   reason: string;
+  status: DoctorLeaveStatus;
   created_at: string;
 }
 
@@ -26,6 +36,7 @@ function toLeave(l: RawDoctorLeave): DoctorLeave {
     startDate: l.start_date,
     endDate: l.end_date,
     reason: l.reason ?? "",
+    status: l.status ?? "pending",
     createdAt: l.created_at,
   };
 }
@@ -34,6 +45,7 @@ export interface DoctorLeaveInput {
   startDate: string;
   endDate: string;
   reason?: string;
+  status?: DoctorLeaveStatus;
 }
 
 function toRawInput(input: Partial<DoctorLeaveInput>) {
@@ -41,6 +53,7 @@ function toRawInput(input: Partial<DoctorLeaveInput>) {
   if (input.startDate !== undefined) body.start_date = input.startDate;
   if (input.endDate !== undefined) body.end_date = input.endDate;
   if (input.reason !== undefined) body.reason = input.reason;
+  if (input.status !== undefined) body.status = input.status;
   return body;
 }
 

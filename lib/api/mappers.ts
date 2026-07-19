@@ -12,6 +12,10 @@ export interface RawUser {
   email: string;
   date_joined?: string;
   is_staff?: boolean;
+  is_active?: boolean;
+  phone?: string;
+  gender?: string;
+  date_of_birth?: string | null;
 }
 
 export interface RawRole {
@@ -39,7 +43,16 @@ export interface RawUserRole {
 }
 
 export function toUser(u: RawUser): User {
-  return { id: u.id, name: u.name, email: u.email, isStaff: u.is_staff };
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    isStaff: u.is_staff,
+    isActive: u.is_active,
+    phone: u.phone,
+    gender: u.gender,
+    dateOfBirth: u.date_of_birth,
+  };
 }
 
 export function toRole(r: RawRole): Role {

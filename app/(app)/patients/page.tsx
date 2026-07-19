@@ -1,3 +1,4 @@
+import { PatientsActions } from "@/components/patients/patients-actions";
 import { PatientsTable } from "@/components/patients/patients-table";
 import { ErrorState } from "@/components/common/error-state";
 import { PermissionGate } from "@/components/common/permission-gate";
@@ -8,6 +9,7 @@ export default function PatientsPage() {
     <PageContainer
       title="Patients"
       description="Browse patients and open their clinical journey."
+      actions={<PatientsActions />}
     >
       <PermissionGate
         anyOf={["user.view", "emr.view"]}
